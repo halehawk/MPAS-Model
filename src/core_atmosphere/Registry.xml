@@ -316,6 +316,15 @@
                      units="-"
                      description="Stride between file I/O tasks"
                      possible_values="Integer valued, $\leq$ (\# MPI tasks) / config_pio_num_iotasks"/>
+
+                <nml_option name="config_num_aggregator" type="integer" default_value="0"
+                     units="-"
+                     description="Number of tasks to perform file I/O for Adios"
+                     possible_values="Integer valued, 0 $\leq$ config_num_aggregator $\leq$ \# MPI tasks, 0 indicates all tasks perform I/O"/>
+                <nml_option name="config_buffer_size" type="integer" default_value="32"
+                     units="-"
+                     description="Value of PIO_BUFFER_SIZE to perform file I/O for PnetCDF"
+                     possible_values="Integer valued "/>
         </nml_record>
 
         <nml_record name="decomposition" in_defaults="true">

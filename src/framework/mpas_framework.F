@@ -92,9 +92,12 @@ module mpas_framework
       character(len=*), intent(in), optional :: calendar
 
       character(len=StrKIND), pointer :: config_calendar_type
-      integer, pointer :: config_pio_num_iotasks, config_pio_stride
+      integer, pointer :: config_pio_num_iotasks, config_pio_stride, config_num_aggregator
+      integer,pointer  :: config_buffer_size
       integer :: pio_num_iotasks
       integer :: pio_stride
+      integer :: num_aggregator
+      integer (kind=8) :: user_buffer_size
 
       call mpas_timer_init(domain)
 
@@ -118,8 +121,12 @@ module mpas_framework
       if (.not. present(io_system)) then
          call mpas_pool_get_config(domain % configs, 'config_pio_num_iotasks', config_pio_num_iotasks)
          call mpas_pool_get_config(domain % configs, 'config_pio_stride', config_pio_stride)
+         call mpas_pool_get_config(domain % configs, 'config_num_aggregator', config_num_aggregator)
+         call mpas_pool_get_config(domain % configs, 'config_buffer_size', config_buffer_size)
          pio_num_iotasks = config_pio_num_iotasks
          pio_stride = config_pio_stride
+         num_aggregator = config_num_aggregator
+         user_buffer_size = int(config_buffer_size, kind=8) * 1024_8 * 1024_8
 
          !
          ! If at most one of config_pio_num_iotasks and config_io_stride are zero, compute
@@ -139,6 +146,7 @@ module mpas_framework
          call mpas_log_write('')
          call mpas_log_write('    I/O task count  = $i', intArgs=[pio_num_iotasks])
          call mpas_log_write('    I/O task stride = $i', intArgs=[pio_stride])
+         call mpas_log_write('    I/O num aggregator = $i', intArgs=[num_aggregator])
          call mpas_log_write('')
       else
          pio_num_iotasks = -1    ! Not used when external io_system is provided
@@ -147,7 +155,7 @@ module mpas_framework
 
       domain % ioContext % dminfo => domain % dminfo
 
-      call MPAS_io_init(domain % ioContext, pio_num_iotasks, pio_stride, io_system)
+      call MPAS_io_init(domain % ioContext, pio_num_iotasks, pio_stride, user_buffer_size, io_system)
 
    end subroutine mpas_framework_init_phase2!}}}
 

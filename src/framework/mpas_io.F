@@ -14,10 +14,15 @@ module mpas_io
 
 #ifdef MPAS_PIO_SUPPORT
    use pio
-   use piolib_mod
-   use pionfatt_mod
    use pio_types
+#ifndef MPAS_SCORPIO_SUPPORT
+   use pio
+   use pio_types
+#endif
 
+#ifdef MPAS_SCORPIO_SUPPORT
+   use spio_err, only: pio_set_log_level
+#endif
 #ifdef SINGLE_PRECISION
    integer, parameter :: PIO_REALKIND = PIO_REAL
 #else
@@ -140,13 +145,14 @@ module mpas_io
    contains
 
 
-   subroutine MPAS_io_init(ioContext, io_task_count, io_task_stride, io_system, ierr)
+   subroutine MPAS_io_init(ioContext, io_task_count, io_task_stride,io_buffer_size, io_system, ierr)
 
       implicit none
 
       type (mpas_io_context_type), intent(inout) :: ioContext
       integer, intent(in) :: io_task_count
       integer, intent(in) :: io_task_stride
+      integer (kind=8), intent(in), optional :: io_buffer_size
 #ifdef MPAS_PIO_SUPPORT
       type (iosystem_desc_t), optional, pointer :: io_system
 #else
@@ -192,6 +198,7 @@ module mpas_io
 
 #ifdef MPAS_PIO_SUPPORT
          allocate(ioContext % pio_iosystem)
+         call pio_set_buffer_size_limit(io_buffer_size)
          call PIO_init(ioContext % dminfo % my_proc_id, &  ! comp_rank
 #ifdef MPAS_USE_MPI_F08
                        ioContext % dminfo % comm % mpi_val, &  ! comp_comm
@@ -199,7 +206,7 @@ module mpas_io
                        ioContext % dminfo % comm,       &  ! comp_comm
 #endif
                        io_task_count,             &     ! num_iotasks
-                       0,                         &     ! num_aggregator
+                       4,                         &     ! num_aggregator
                        io_task_stride,            &     ! stride
                        PIO_rearr_box,             &     ! rearr
                        ioContext % pio_iosystem)           ! iosystem
@@ -226,8 +233,11 @@ module mpas_io
 #endif
   
       end if
-
+#ifdef MPAS_SCORPIO_SUPPORT
+      local_ierr=pio_set_log_level(0)
+#endif
 #ifdef MPAS_PIO_SUPPORT
+      local_ierr=PIO_set_log_level(2)
       call pio_seterrorhandling(ioContext % pio_iosystem, PIO_BCAST_ERROR)
 #endif
 
@@ -340,6 +350,7 @@ module mpas_io
       if (ioformat /= MPAS_IO_NETCDF .and. &
           ioformat /= MPAS_IO_NETCDF4 .and. &
           ioformat /= MPAS_IO_PNETCDF .and. &
+          ioformat /= MPAS_IO_ADIOS .and. &
           ioformat /= MPAS_IO_PNETCDF5) then
          if (present(ierr)) ierr = MPAS_IO_ERR_INVALID_FORMAT
          return 
@@ -370,6 +381,10 @@ module mpas_io
             pio_mode = PIO_64BIT_OFFSET
          else if (ioformat == MPAS_IO_NETCDF4) then
             pio_iotype = PIO_iotype_netcdf4p
+#ifdef MPAS_SCORPIO_SUPPORT
+         else if (ioformat == MPAS_IO_ADIOS) then
+            pio_iotype = PIO_iotype_adios
+#endif
 #ifdef USE_PIO2
             pio_mode = 0
 #else

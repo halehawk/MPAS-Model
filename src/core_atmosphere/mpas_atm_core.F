@@ -12,6 +12,7 @@ module atm_core
    use mpas_dmpar
    use mpas_log, only : mpas_log_write, mpas_log_info
    use mpas_io_units, only : mpas_new_unit, mpas_release_unit
+   use proc_status_vm, only: prt_vm_status
 
    !
    ! Abstract interface for routine used to communicate halos of fields
@@ -696,6 +697,7 @@ module atm_core
       if (MPAS_stream_mgr_ringing_alarms(domain % streamManager, direction=MPAS_STREAM_OUTPUT, ierr=ierr)) then
          call mpas_log_write('Timing for diagnostic computation: $r s', realArgs=(/real(diag_stop_time - diag_start_time, kind=RKIND)/))
          call mpas_log_write('Timing for stream output: $r s', realArgs=(/real(output_stop_time - output_start_time, kind=RKIND)/))
+         call prt_vm_status('MPAS:after-IO-write',mpas_log_info%taskID)
       end if
 
       call mpas_timer_start('diagnostic_fields')
@@ -857,6 +859,7 @@ module atm_core
          if (MPAS_stream_mgr_ringing_alarms(domain % streamManager, direction=MPAS_STREAM_OUTPUT, ierr=ierr)) then
             call mpas_log_write('Timing for diagnostic computation: $r s', realArgs=(/real(diag_stop_time - diag_start_time, kind=RKIND)/))
             call mpas_log_write('Timing for stream output: $r s', realArgs=(/real(output_stop_time - output_start_time, kind=RKIND)/))
+            call prt_vm_status('MPAS:after-IO-write',mpas_log_info%taskID)
          end if
 
          ! reset any diagnostics here

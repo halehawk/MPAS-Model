@@ -16,6 +16,7 @@ ifdef PHYSICS
 endif
 
 OBJS = mpas_atm_core.o \
+       proc_status_vm.o \
        mpas_atm_core_interface.o \
        mpas_atm_dimensions.o \
        mpas_atm_threading.o \
@@ -61,7 +62,7 @@ atmcore: $(PHYSCORE) dycore diagcore $(OBJS)
 
 mpas_atm_core_interface.o: mpas_atm_core.o
 
-mpas_atm_core.o: dycore diagcore mpas_atm_threading.o mpas_atm_halos.o
+mpas_atm_core.o: dycore diagcore mpas_atm_threading.o mpas_atm_halos.o proc_status_vm.o 
 
 mpas_atm_dimensions.o:
 

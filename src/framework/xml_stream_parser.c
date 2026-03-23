@@ -1115,6 +1115,7 @@ void xml_stream_parser(char *fname, void *manager, int *mpi_comm, int *status)
 		packagelist = ezxml_attr(stream_xml, "packages");
 		clobber = ezxml_attr(stream_xml, "clobber_mode");
 		iotype = ezxml_attr(stream_xml, "io_type");
+                printf("iotype=%s\n",iotype);
 
 		/* Extract the input interval, if it refer to other streams */
 		if ( interval_in ) {
@@ -1257,6 +1258,11 @@ void xml_stream_parser(char *fname, void *manager, int *mpi_comm, int *status)
 			else if (strstr(iotype, "netcdf") != NULL) {
 				i_iotype = 2;
 				snprintf(msgbuf, MSGSIZE, "        %-20s%s", "I/O type:", "Serial NetCDF");
+				mpas_log_write_c(msgbuf, "MPAS_LOG_OUT");
+			}
+			else if (strstr(iotype, "adios") != NULL) {
+				i_iotype = 14;
+				snprintf(msgbuf, MSGSIZE, "        %-20s%s", "I/O type:", "adios2");
 				mpas_log_write_c(msgbuf, "MPAS_LOG_OUT");
 			}
 			else {
@@ -1566,6 +1572,11 @@ void xml_stream_parser(char *fname, void *manager, int *mpi_comm, int *status)
 			else if (strstr(iotype, "netcdf") != NULL) {
 				i_iotype = 2;
 				snprintf(msgbuf, MSGSIZE, "        %-20s%s", "I/O type:", "Serial NetCDF");
+				mpas_log_write_c(msgbuf, "MPAS_LOG_OUT");
+			}
+			else if (strstr(iotype, "adios") != NULL) {
+				i_iotype = 14;
+				snprintf(msgbuf, MSGSIZE, "        %-20s%s", "I/O type:", "ADIOS2");
 				mpas_log_write_c(msgbuf, "MPAS_LOG_OUT");
 			}
 			else {
@@ -1910,6 +1921,7 @@ void xml_stream_get_attributes(char *fname, char *streamname, int *mpi_comm, cha
 		reference_time = ezxml_attr(stream_xml, "reference_time");
 		c_filename_interval = ezxml_attr(stream_xml, "filename_interval");
 		xml_iotype = ezxml_attr(stream_xml, "io_type");
+                printf("xml_iotype=%s\n",xml_iotype);
 
 		if (strcmp(streamID, streamname) == 0) {
 			found = 1;
@@ -1962,6 +1974,11 @@ void xml_stream_get_attributes(char *fname, char *streamname, int *mpi_comm, cha
 				else if (strstr(xml_iotype, "netcdf") != NULL) {
 					sprintf(io_type, "%s", xml_iotype);
 					snprintf(msgbuf, MSGSIZE, "Using io_type Serial NetCDF for mesh stream");
+					mpas_log_write_c(msgbuf, "MPAS_LOG_OUT");
+				}
+				else if (strstr(xml_iotype, "adios") != NULL) {
+					sprintf(io_type, "%s", xml_iotype);
+					snprintf(msgbuf, MSGSIZE, "Using io_type adios2 for mesh stream");
 					mpas_log_write_c(msgbuf, "MPAS_LOG_OUT");
 				}
 				else {
